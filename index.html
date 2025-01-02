@@ -1,0 +1,216 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dichiarazione fine giornata orefici</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"></link>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-100 font-roboto">
+    <div class="container mx-auto p-4">
+        <h1 class="text-2xl font-bold mb-4">Registrazione movimenti di cassa</h1>
+        <form id="cashMovementForm" class="bg-white p-6 rounded shadow-md mb-6">
+            <div class="mb-4">
+                <label for="causale" class="block text-gray-700 font-bold mb-2">Causali</label>
+                <select id="causale" class="block w-full border border-gray-300 rounded py-2 px-3">
+                    <option value="Corrispettivo">Corrispettivo</option>
+                    <option value="Buoni pasto">Buoni pasto</option>
+                    <option value="Spese">Spese</option>
+                    <option value="Totale pos Lumia">Totale pos Lumia</option>
+                    <option value="total pos nexi">Totale POS Nexi</option>
+                    <option value="Totale POS">Totale POS</option>
+                    <option value="digital wallet">Digital Wallet</option>
+                    <option value="satispay">Satispay</option>
+                    <option value="Fattura pagata con POS">Fattura pagata con POS</option>
+                    <option value="Fattura pagata con contanti">Fattura pagata con contanti</option>
+                    <option value="Buoni coin">Buoni coin</option>
+                    <option value="Totale Contanti">Totale Contanti </option>
+                    <option value="Totale Bar">Totale Bar</option>                  
+                    <option value="Ritiro contanti">Ritiro contanti</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label for="Importo" class="block text-gray-700 font-bold mb-2">Importo</label>
+                <input type="number" step="0.01" id="Importo" class="block w-full border border-gray-300 rounded py-2 px-3" required>
+            </div>
+            <div class="mb-4">
+                <label for="note" class="block text-gray-700 font-bold mb-2">Note (Opzionali)</label>
+                <textarea id="note" class="block w-full border border-gray-300 rounded py-2 px-3"></textarea>
+            </div>
+            <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded">Registra operazione</button>
+        </form>
+
+        <h2 class="text-xl font-bold mb-4">Lista operazioni</h2>
+        <ul id="movementsList" class="bg-white p-6 rounded shadow-md">
+            <!-- List of recorded movements will appear here -->
+        </ul>
+
+        <div class="mt-6">
+            <label for="email" class="block text-gray-700 font-bold mb-2">Invia report via email </label>
+            <input type="email" id="email" class="block w-full border border-gray-300 rounded py-2 px-3 mb-4" placeholder="Enter email address">
+            <button id="sendEmail" class="bg-green-500 text-white py-2 px-4 rounded">Invia email </button>
+        </div>
+
+        <div class="mt-6">
+            <button id="newDay" class="bg-red-500 text-white py-2 px-4 rounded">Nuovo Giorno</button>
+        </div>
+
+        <div class="mt-6">
+            <h2 class="text-xl font-bold mb-4">Aggiungi nuova causale</h2>
+            <form id="newCausaleForm" class="bg-white p-6 rounded shadow-md">
+                <div class="mb-4">
+                    <label for="newCausale" class="block text-gray-700 font-bold mb-2">Nome della causale</label>
+                    <input type="text" id="newCausale" class="block w-full border border-gray-300 rounded py-2 px-3" required>
+                </div>
+                <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded">Aggiungi causale</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load saved movements from localStorage
+            const savedMovements = JSON.parse(localStorage.getItem('movements')) || [];
+            const movementsList = document.getElementById('movementsList');
+            savedMovements.forEach(movement => {
+                const movementItem = document.createElement('li');
+                movementItem.className = 'flex justify-between items-center mb-2 p-2 border-b border-gray-300';
+                movementItem.innerHTML = `
+                    <div>
+                        <p class="font-bold">${movement.causale}</p>
+                        <p>Importo: $${movement.Importo}</p>
+                        <p>note: ${movement.note}</p>
+                    </div>
+                    <div>
+                        <button class="editMovement bg-yellow-500 text-white py-1 px-2 rounded mr-2">Edit</button>
+                        <button class="deleteMovement bg-red-500 text-white py-1 px-2 rounded">Delete</button>
+                    </div>
+                `;
+                movementsList.appendChild(movementItem);
+            });
+
+            // Load saved causali from localStorage
+            const savedCausali = JSON.parse(localStorage.getItem('causali')) || [];
+            const causaleSelect = document.getElementById('causale');
+            savedCausali.forEach(causale => {
+                const newOption = document.createElement('option');
+                newOption.value = causale;
+                newOption.textContent = causale;
+                causaleSelect.appendChild(newOption);
+            });
+        });
+
+        document.getElementById('cashMovementForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const causale = document.getElementById('causale').value;
+            const Importo = document.getElementById('Importo').value;
+            const note = document.getElementById('note').value;
+
+            const movementItem = document.createElement('li');
+            movementItem.className = 'flex justify-between items-center mb-2 p-2 border-b border-gray-300';
+            movementItem.innerHTML = `
+                <div>
+                    <p class="font-bold">${causale}</p>
+                    <p>Importo: $${Importo}</p>
+                    <p>note: ${note}</p>
+                </div>
+                <div>
+                    <button class="editMovement bg-yellow-500 text-white py-1 px-2 rounded mr-2">Edit</button>
+                    <button class="deleteMovement bg-red-500 text-white py-1 px-2 rounded">Delete</button>
+                </div>
+            `;
+
+            document.getElementById('movementsList').appendChild(movementItem);
+
+            // Save movement to localStorage
+            const savedMovements = JSON.parse(localStorage.getItem('movements')) || [];
+            savedMovements.push({ causale, Importo, note });
+            localStorage.setItem('movements', JSON.stringify(savedMovements));
+
+            document.getElementById('cashMovementForm').reset();
+        });
+
+        document.getElementById('movementsList').addEventListener('click', function(event) {
+            if (event.target.classList.contains('deleteMovement')) {
+                const movementItem = event.target.closest('li');
+                const causale = movementItem.querySelector('p.font-bold').textContent;
+                const Importo = movementItem.querySelector('p:nth-child(2)').textContent.replace('Importo: $', '');
+                const note = movementItem.querySelector('p:nth-child(3)').textContent.replace('note: ', '');
+
+                // Remove from localStorage
+                let savedMovements = JSON.parse(localStorage.getItem('movements')) || [];
+                savedMovements = savedMovements.filter(movement => !(movement.causale === causale && movement.Importo === Importo && movement.note === note));
+                localStorage.setItem('movements', JSON.stringify(savedMovements));
+
+                movementItem.remove();
+            } else if (event.target.classList.contains('editMovement')) {
+                const movementItem = event.target.closest('li');
+                const causale = movementItem.querySelector('p.font-bold').textContent;
+                const Importo = movementItem.querySelector('p:nth-child(2)').textContent.replace('Importo: $', '');
+                const note = movementItem.querySelector('p:nth-child(3)').textContent.replace('note: ', '');
+
+                document.getElementById('causale').value = causale;
+                document.getElementById('Importo').value = Importo;
+                document.getElementById('note').value = note;
+
+                // Remove from localStorage
+                let savedMovements = JSON.parse(localStorage.getItem('movements')) || [];
+                savedMovements = savedMovements.filter(movement => !(movement.causale === causale && movement.Importo === Importo && movement.note === note));
+                localStorage.setItem('movements', JSON.stringify(savedMovements));
+
+                movementItem.remove();
+            }
+        });
+
+        document.getElementById('sendEmail').addEventListener('click', function() {
+            const email = document.getElementById('email').value;
+            const movementsList = document.getElementById('movementsList').children;
+            const date = new Date();
+            const formattedDate = `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
+            const subject = `dichiarazione distinta ${formattedDate}`;
+            let body = '';
+
+            for (let i = 0; i < movementsList.length; i++) {
+                const causale = movementsList[i].querySelector('p.font-bold').textContent;
+                const Importo = movementsList[i].querySelector('p:nth-child(2)').textContent.replace('Importo: $', '');
+                const note = movementsList[i].querySelector('p:nth-child(3)').textContent.replace('note: ', '');
+                body += `Causale: ${causale}, Importo: $${Importo}, Note: ${note}\n`;
+            }
+
+            if (email && body) {
+                const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                window.location.href = mailtoLink;
+            } else {
+                alert('Inserire un indirzzo email valido');
+            }
+        });
+
+        document.getElementById('newDay').addEventListener('click', function() {
+            if (confirm('Sei sicuro di voler iniziare un nuovo giorno? Tutte le operazioni correnti saranno cancellate.')) {
+                document.getElementById('movementsList').innerHTML = '';
+                localStorage.removeItem('movements');
+            }
+        });
+
+        document.getElementById('newCausaleForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const newCausale = document.getElementById('newCausale').value;
+            const causaleSelect = document.getElementById('causale');
+
+            const newOption = document.createElement('option');
+            newOption.value = newCausale;
+            newOption.textContent = newCausale;
+
+            causaleSelect.appendChild(newOption);
+
+            // Save new causale to localStorage
+            const savedCausali = JSON.parse(localStorage.getItem('causali')) || [];
+            savedCausali.push(newCausale);
+            localStorage.setItem('causali', JSON.stringify(savedCausali));
+
+            document.getElementById('newCausaleForm').reset();
+        });
+    </script>
+</body>
+</html>
